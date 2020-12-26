@@ -1,4 +1,5 @@
-﻿using Mirror;
+﻿using System.Runtime.InteropServices;
+using Mirror;
 using UnityEngine;
 using UnityEngine.AI;
 using static UnityEngine.Camera;
@@ -8,6 +9,7 @@ namespace Player {
         private Camera m_camera;
         private Animator m_animator;
         private NavMeshAgent m_navMeshAgent;
+        private Vector3 destination;
 
         private void Start() {
             m_animator = GetComponent<Animator>();
@@ -46,18 +48,17 @@ namespace Player {
             m_camera.transform.localEulerAngles = new Vector3(30f, 0f, 0f);
         }
         [Client] private void UpdateAnimator() {
-            Vector3 velocity = GetComponent<NavMeshAgent>().velocity;
+            Vector3 velocity = m_navMeshAgent.velocity;
             Vector3 localVelocity = transform.InverseTransformDirection(velocity);
             float speed = localVelocity.z;
             m_animator.SetFloat("forwardSpeed", speed);
         }
         [ClientRpc] private void RpcStopMovement() { // Needs work, stops too abruptly
-            GetComponent<NavMeshAgent>().destination = m_navMeshAgent.nextPosition;
+            m_navMeshAgent.ResetPath();
         }
         [ClientRpc]
         private void RpcMoveToCursor(Vector3 destination) {
             m_navMeshAgent.SetDestination(destination);
-            // UpdateAnimator();
             }
         }
     }

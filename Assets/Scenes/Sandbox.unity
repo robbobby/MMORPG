@@ -1188,8 +1188,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1514289289}
   - component: {fileID: 1514289288}
-  - component: {fileID: 1514289287}
   - component: {fileID: 1514289286}
+  - component: {fileID: 1514289287}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -1258,11 +1258,12 @@ MonoBehaviour:
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 5028406358109349237, guid: cc62eaa688fc74d01b9a942acec216df,
+  playerPrefab: {fileID: 1930266110797221606, guid: e47ebf6e0d4014281982ac439ef17813,
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
+  - {fileID: 1930266110797221606, guid: e47ebf6e0d4014281982ac439ef17813, type: 3}
   - {fileID: 5028406358109349237, guid: cc62eaa688fc74d01b9a942acec216df, type: 3}
 --- !u!4 &1514289289
 Transform:
