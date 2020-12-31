@@ -1,12 +1,17 @@
+using Client;
+using Mirror;
 using UnityEngine;
 
 namespace Server.Monster {
-    public class MonsterFlags : MonoBehaviour {
-        public bool isAlive;
+    public class SMonsterFlags : NetworkBehaviour, IStateScheduler {
+        public bool IsAlive { get; set; }
         public bool isAttacking;
+        public bool hasTarget;
         public void Awake() {
-            isAlive = true;
+            IsAlive = true;
             isAttacking = false;
+            hasTarget = false;
         }
+
     }
 }

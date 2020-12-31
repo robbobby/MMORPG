@@ -7,73 +7,68 @@ using UnityEngine;
 
 namespace Client.Player.Combat {
     [RequireComponent(typeof(Animator))]
-    [RequireComponent(typeof(StateScheduler))]
-    [RequireComponent(typeof(ControllerServerCall))]
-    public class CombatHandler : NetworkBehaviour, IAction {
-        [SerializeField] private Transform m_target;
-        private float m_attackRange = 2f;
-        private ControllerServerCall m_serverCall;
-        private float m_attackSpeed;
-        private float m_timeSinceLastAttack;
-        private StateScheduler m_stateScheduler;
-        private Animator m_animator;
+    [RequireComponent(typeof(PlayerStateScheduler))]
+    [RequireComponent(typeof(PlayerControllerServerCall))]
+    public class PlayerCombatHandler : MonoBehaviour, IPlayerAction {
         private static readonly int Attack = Animator.StringToHash("attack");
-        private Target m_targetObject;
-        private bool m_isMoving;
-        private bool m_isAttacking;
+        private float m_timeSinceLastAttack = Mathf.Infinity;
+        private PlayerStats m_playerStats;
         private int m_targetHealth;
+        private PlayerStateScheduler m_playerStateScheduler;
+        private PlayerControllerServerCall m_serverCall;
+        private Target m_targetObject;
         private float DelayMovementAmount { get; set; }
-
-
         private void Start() {
-            m_isMoving = false;
-            m_animator = GetComponent<Animator>();
-            m_stateScheduler = GetComponent<StateScheduler>();
-            m_attackSpeed = 1f;
-            m_timeSinceLastAttack = 5f;
-            m_serverCall = GetComponent<ControllerServerCall>();
+            m_playerStats = GetComponent<PlayerStats>();
+            m_playerStateScheduler = GetComponent<PlayerStateScheduler>();
+            m_serverCall = GetComponent<PlayerControllerServerCall>();
             DelayMovementAmount = 0.8f;
         }
         private void Update() {
+            m_playerStats.attackSpeed = 1;
+            m_playerStats.attackRange = 2f;
             m_timeSinceLastAttack += Time.deltaTime;
         }
         public bool CanMove() {
             return m_timeSinceLastAttack > DelayMovementAmount;
         }
-        [Client] public bool ContinueAttack() {
+        public bool ContinueAttack() {
             if (!IsInRange()) {
-                m_serverCall.CmdValidateAttackMonster(m_target.position);
-                m_isMoving = true;
+                m_serverCall.CmdValidateAttackMonster(m_targetObject.transform.position);
+                m_playerStateScheduler.isMoving = true;
                 return true;
             }
-            if (m_stateScheduler.IsMovingToAttack) {
-                m_stateScheduler.StartAction(this);
-                m_stateScheduler.IsMovingToAttack = false;
+            if (m_playerStateScheduler.isMovingToAttack) {
+                m_playerStateScheduler.StartAction(this);
+                m_playerStateScheduler.isMovingToAttack = false;
             }
-            if (m_targetObject.GetComponent<Stats>().hp == 0) {
-                m_stateScheduler.StopAction(this);
+            if (m_targetObject.GetComponent<SMonsterStats>().currentHp == 0) {
+                m_playerStateScheduler.StopAction(this);
                 return false;
             }
-            if ((!(m_timeSinceLastAttack > m_attackSpeed))) return true;
-            if (!m_target) return true;
-            m_serverCall.CmdValidateAttack(m_timeSinceLastAttack, m_attackSpeed, m_target);
-            m_stateScheduler.IsAttacking = true;
+            if ((!(m_timeSinceLastAttack > m_playerStats.attackSpeed))) return true;
+            // if (!m_targetObject.transform.position) return true;
+            m_serverCall.CmdValidateAttack(m_timeSinceLastAttack, m_playerStats.attackSpeed, m_targetObject.transform);
+            m_playerStateScheduler.isAttacking = true;
             m_timeSinceLastAttack = 0;
             return true;
         }
-        [Client] private bool IsInRange() =>
-            Vector3.Distance(this.transform.position, m_target.transform.position) < m_attackRange;
-        public void StopAction() {
-            m_stateScheduler.IsAttacking = false;
-            m_stateScheduler.IsMovingToAttack = false;
-            m_target = null;
-        }
+        private bool IsInRange() =>
+            Vector3.Distance(this.transform.position, m_targetObject.transform.position) < m_playerStats.attackRange;
         public void SetTarget(Transform hitTransform, Target targetObject) {
             m_targetObject = targetObject;
-            m_target = targetObject.transform;
         }
-        [Client] private void AE_Hit() { // Hit on animation call to server to say hit where transform is
-            if(!isLocalPlayer) return;
+        // IPlayerAction Methods
+        public void StopAction() {
+            m_playerStateScheduler.isAttacking = false;
+            m_playerStateScheduler.isMovingToAttack = false;
+            m_targetObject = null;
+        }
+        public void StartAction() {
+            m_playerStateScheduler.StartAction(this);
+        }
+        // Animation methods
+        private void AE_Hit() { // Hit on animation call to server to say hit where transform is
             if(!m_targetObject) return;
             m_serverCall.CmdHitTarget(m_targetObject);
         }

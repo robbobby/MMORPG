@@ -2,7 +2,7 @@ using Mirror;
 using UnityEngine;
 
 namespace Client.Player {
-    public class SoundManager : NetworkBehaviour {
+    public class PlayerSoundManager : MonoBehaviour {
         [SerializeField] AudioClip footStep;
         [SerializeField] private AudioSource stepFoot;
         public void PlayFootstep() {

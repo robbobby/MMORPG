@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace Client.Player.PlayerCamera {
-    public class CameraPosition : NetworkBehaviour {
+    public class PlayerCameraPosition : NetworkBehaviour {
         [SerializeField] private Transform target;
         private Camera m_camera;
 

@@ -3,37 +3,35 @@ using Mirror;
 using UnityEngine;
 
 namespace Client.Player.Core {
-    public class StateScheduler : NetworkBehaviour{
-        private IAction m_currentAction;
-        [SerializeField] private bool m_isCurrentActionNull;
-        [SerializeField] public bool IsMoving;
-        [SerializeField] public bool IsMovingToAttack;
-        [SerializeField] public bool IsAttacking;
+    public class PlayerStateScheduler : MonoBehaviour, IStateScheduler {
+        [SerializeField] private bool isCurrentActionNull;
+        public bool IsAlive { get; set; }
+        public bool hasTarget;
+        public bool isMoving;
+        public bool isMovingToAttack;
+        public bool isAttacking;
+        private IPlayerAction m_currentPlayerAction;
 
         private void Start() {
-            m_isCurrentActionNull = true;
+            isCurrentActionNull = true;
+            IsAlive = true;
         }
-        public void StartAction(IAction action) {
-            if ((m_currentAction == action) || m_isCurrentActionNull) {
-                m_currentAction = action;
-                m_isCurrentActionNull = false;
+        public void StartAction(IPlayerAction playerAction) {
+            if ((m_currentPlayerAction == playerAction) || isCurrentActionNull) {
+                m_currentPlayerAction = playerAction;
+                isCurrentActionNull = false;
                 return;
             }
-            print("Reached here");
-            m_currentAction.StopAction();
-            m_currentAction = action;
+            m_currentPlayerAction.StopAction();
+            m_currentPlayerAction = playerAction;
         }
-
-        public void StopAction(IAction action) {
-            // if (IsMovingToAttack) return;
-            print("Stopping action without new action"); 
-            action.StopAction();
-            m_isCurrentActionNull = true;
+        public void StopAction(IPlayerAction playerAction) {
+            playerAction.StopAction();
+            isCurrentActionNull = true;
         }
-
         public void StopCurrentAction() {
-            m_currentAction.StopAction();
-            m_isCurrentActionNull = true;
+            m_currentPlayerAction.StopAction();
+            isCurrentActionNull = true;
         }
     }
 }

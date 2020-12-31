@@ -1,7 +1,8 @@
 using Mirror;
 
 namespace Client.Player.Core {
-    public interface IAction {
+    public interface IPlayerAction {
         void StopAction();
+        void StartAction();
     }
 }
